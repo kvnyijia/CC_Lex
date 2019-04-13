@@ -55,14 +55,15 @@ cpp_comment {slash}{2}{all_char}*{eol}
 "="      { printf("%s \t ASGN\n", yytext); }
 "false"  { printf("%s \t FALSE\n", yytext); }
 
-{id}	    { printf("%s \t ID\n", yytext); }
-{i_const}   { printf("%s \t I_CONST\n", yytext); }
-{f_const}   { printf("%s \t F_CONST\n", yytext); }
-{quota}     { printf("%s \t QUOTA\n", yytext); BEGIN STR; }
-<STR>{id} { printf("%s \t STR_CONST\n", yytext); BEGIN 0; }
-{space}  {;}
+{id}	      { printf("%s \t ID\n", yytext); }
+{i_const}     { printf("%s \t I_CONST\n", yytext); }
+{f_const}     { printf("%s \t F_CONST\n", yytext); }
+{quota}       { printf("%s \t QUOTA\n", yytext); BEGIN STR; }
+{space}       {;}
 {cpp_comment} { printf("%s \t C++ Comment\n", yytext); }
-\n			{;}
+<STR>{id}     { printf("%s \t STR_CONST\n", yytext); }
+<STR>{quota}  { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
+\n			  {;}
 
 %%
 
