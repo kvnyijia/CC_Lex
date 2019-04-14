@@ -1,12 +1,12 @@
 /* Definition section */
 %{
-	#include <stdio.h>
-	#include <stdlib.h>
+    #include <stdio.h>
+    #include <stdlib.h>
 
-	#define T_ID    300 
-	#define T_INT   301
-	#define T_SEMICOLON 302
-	#define T_ASGN 303
+    #define T_ID    300 
+    #define T_INT   301
+    #define T_SEMICOLON 302
+    #define T_ASGN 303
     #define T_I_CONST 304
     
     #define T_FLOAT 306
@@ -17,7 +17,11 @@
     #define T_QUOTA 311
     #define T_STR_CONST 312
 
+	int num_line = 0;
+	int num_comment_line = 0;
 %}
+
+
 
 /* Define regular expression label */
 
@@ -50,8 +54,8 @@ str_const [^"]*
 %x STR C_COMMENT CPP_COMMENT
 %%
 
-"+" 	 { printf("%s \t ADD\n", yytext); }
-"-"		 { printf("%s \t SUB\n", yytext); }
+"+"      { printf("%s \t ADD\n", yytext); }
+"-"      { printf("%s \t SUB\n", yytext); }
 "int"    { printf("%s \t INT\n", yytext); }
 "float"  { printf("%s \t FLOAT\n", yytext); }
 "bool"   { printf("%s \t BOOL\n", yytext); }
@@ -92,20 +96,22 @@ str_const [^"]*
 "while"  { printf("%s \t WHILE\n", yytext); }
 "return" { printf("%s \t RET\n", yytext); }
 
-{id}	      { printf("%s \t ID\n", yytext); }
+{id}          { printf("%s \t ID\n", yytext); }
 {i_const}     { printf("%s \t I_CONST\n", yytext); }
 {f_const}     { printf("%s \t F_CONST\n", yytext); }
 {quota}       { printf("%s \t QUOTA\n", yytext); BEGIN STR; }
 {space}       {;}
-<STR>{str_const}     { printf("%s \t STR_CONST\n", yytext); }
-<STR>{quota}  { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
-<C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext); BEGIN 0; }
-<CPP_COMMENT>{newline}    { printf("\t C++ Comment %s", yytext); BEGIN 0; }
-\n			  {;}
+\n            { ++num_line; }
+
+<STR>{str_const}          { printf("%s \t STR_CONST\n", yytext); }
+<STR>{quota}              { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
+<C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext); ++num_comment_line; BEGIN 0; }
+<C_COMMENT>\n             { printf("\n"); ++num_comment_line; ++num_line; }
+<CPP_COMMENT>{newline}    { printf(" \t C++ Comment%s", yytext); ++num_comment_line; ++num_line; BEGIN 0; }
 
 %%
 
-/*	C Code section */
+/*  C Code section */
 int yywrap(void)
 {
     return 1;
@@ -113,10 +119,10 @@ int yywrap(void)
 
 int main(int argc,char *argv[])
 {
-	yyin = fopen(argv[1],"r");
-	yylex();
-	printf("\nParse over, the line number is 1.\n\n");
-	printf("comment: 1 lines\n\n");
+    yyin = fopen(argv[1],"r");
+    yylex();
+    printf("\nParse over, the line number is %d.\n\n", num_line);
+    printf("comment: %d lines\n\n", num_comment_line);
 
-	return 0;
+    return 0;
 }
