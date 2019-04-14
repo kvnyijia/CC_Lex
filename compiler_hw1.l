@@ -61,6 +61,25 @@ anything {any_char_but_newline}*
 "false"  { printf("%s \t FALSE\n", yytext); }
 "/*"     { printf("%s", yytext); BEGIN C_COMMENT; }
 "//"     { printf("%s", yytext); BEGIN CPP_COMMENT; }
+"*"      { printf("%s \t MUL\n", yytext); }
+"/"      { printf("%s \t DIV\n", yytext); }
+"%"      { printf("%s \t MOD\n", yytext); }
+"++"     { printf("%s \t INC\n", yytext); }
+"--"     { printf("%s \t DEC\n", yytext); }
+"+="     { printf("%s \t ADDASGN\n", yytext); }
+"-="     { printf("%s \t SUBASGN\n", yytext); }
+"*="     { printf("%s \t MULASGN\n", yytext); }
+"/="     { printf("%s \t DIVASGN\n", yytext); }
+"%="     { printf("%s \t MODASGN\n", yytext); }
+"<"     { printf("%s \t LT\n", yytext); }
+">"     { printf("%s \t MT\n", yytext); }
+"<="     { printf("%s \t LTE\n", yytext); }
+">="     { printf("%s \t MTE\n", yytext); }
+"=="     { printf("%s \t EQ\n", yytext); }
+"!="     { printf("%s \t NE\n", yytext); }
+"&&"     { printf("%s \t AND\n", yytext); }
+"||"     { printf("%s \t OR\n", yytext); }
+"!"     { printf("%s \t NOT\n", yytext); }
 
 {id}	      { printf("%s \t ID\n", yytext); }
 {i_const}     { printf("%s \t I_CONST\n", yytext); }
