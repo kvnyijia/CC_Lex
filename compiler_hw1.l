@@ -30,7 +30,7 @@ space [ ]
 quota ["]
 slash [/]
 newline [\n]
-any_char_but_newline [.]
+any_char_but_newline .
 
 star [*]
 lcom {slash}{star}
@@ -43,8 +43,8 @@ number {digit}+
 
 i_const {digit}+
 f_const {digit}+{dot}{digit}+
-str_const {quota}{all_char}*{quota}
-anything {any_char_but_newline}*
+str_const [^"]*
+
 
 /* Rules section */
 %x STR C_COMMENT CPP_COMMENT
@@ -58,6 +58,7 @@ anything {any_char_but_newline}*
 "string" { printf("%s \t STRING\n", yytext); }
 ";"      { printf("%s \t SEMICOLON\n", yytext); }
 "="      { printf("%s \t ASGN\n", yytext); }
+"true"   { printf("%s \t TRUE\n", yytext); }
 "false"  { printf("%s \t FALSE\n", yytext); }
 "/*"     { printf("%s", yytext); BEGIN C_COMMENT; }
 "//"     { printf("%s", yytext); BEGIN CPP_COMMENT; }
@@ -71,22 +72,29 @@ anything {any_char_but_newline}*
 "*="     { printf("%s \t MULASGN\n", yytext); }
 "/="     { printf("%s \t DIVASGN\n", yytext); }
 "%="     { printf("%s \t MODASGN\n", yytext); }
-"<"     { printf("%s \t LT\n", yytext); }
-">"     { printf("%s \t MT\n", yytext); }
+"<"      { printf("%s \t LT\n", yytext); }
+">"      { printf("%s \t MT\n", yytext); }
 "<="     { printf("%s \t LTE\n", yytext); }
 ">="     { printf("%s \t MTE\n", yytext); }
 "=="     { printf("%s \t EQ\n", yytext); }
 "!="     { printf("%s \t NE\n", yytext); }
 "&&"     { printf("%s \t AND\n", yytext); }
 "||"     { printf("%s \t OR\n", yytext); }
-"!"     { printf("%s \t NOT\n", yytext); }
+"!"      { printf("%s \t NOT\n", yytext); }
+"("      { printf("%s \t LB\n", yytext); }
+")"      { printf("%s \t RB\n", yytext); }
+"{"      { printf("%s \t LCB\n", yytext); }
+"}"      { printf("%s \t RCB\n", yytext); }
+"if"     { printf("%s \t IF\n", yytext); }
+"else"   { printf("%s \t ELSE\n", yytext); }
+"print"  { printf("%s \t PRINT\n", yytext); }
 
 {id}	      { printf("%s \t ID\n", yytext); }
 {i_const}     { printf("%s \t I_CONST\n", yytext); }
 {f_const}     { printf("%s \t F_CONST\n", yytext); }
 {quota}       { printf("%s \t QUOTA\n", yytext); BEGIN STR; }
 {space}       {;}
-<STR>{id}     { printf("%s \t STR_CONST\n", yytext); }
+<STR>{str_const}     { printf("%s \t STR_CONST\n", yytext); }
 <STR>{quota}  { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
 <C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext); BEGIN 0; }
 <CPP_COMMENT>{newline}    { printf("\t C++ Comment %s", yytext); BEGIN 0; }
