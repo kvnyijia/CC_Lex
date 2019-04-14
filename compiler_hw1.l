@@ -88,6 +88,9 @@ str_const [^"]*
 "if"     { printf("%s \t IF\n", yytext); }
 "else"   { printf("%s \t ELSE\n", yytext); }
 "print"  { printf("%s \t PRINT\n", yytext); }
+"for"    { printf("%s \t FOR\n", yytext); }
+"while"  { printf("%s \t WHILE\n", yytext); }
+"return" { printf("%s \t RET\n", yytext); }
 
 {id}	      { printf("%s \t ID\n", yytext); }
 {i_const}     { printf("%s \t I_CONST\n", yytext); }
