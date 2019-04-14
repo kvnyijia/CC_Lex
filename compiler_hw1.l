@@ -25,12 +25,17 @@ letter [a-zA-Z]
 digit [0-9]
 all_char [\40-\176]
 dot [\.]
-eol [\$]
+eol [$]
 space [ ]
-quota [\"]
-slash [\/]
+quota ["]
+slash [/]
 newline [\n]
 any_char_but_newline [.]
+
+star [*]
+lcom {slash}{star}
+rcom {star}{slash}
+non_rcom [^{rcom}]
 
 
 id {letter}+({letter}|{digit})*
@@ -39,10 +44,10 @@ number {digit}+
 i_const {digit}+
 f_const {digit}+{dot}{digit}+
 str_const {quota}{all_char}*{quota}
-cpp_comment {slash}{2}{all_char}*{eol}
+anything {any_char_but_newline}*
 
 /* Rules section */
-%x STR
+%x STR C_COMMENT CPP_COMMENT
 %%
 
 "+" 	 { printf("%s \t ADD\n", yytext); }
@@ -54,15 +59,18 @@ cpp_comment {slash}{2}{all_char}*{eol}
 ";"      { printf("%s \t SEMICOLON\n", yytext); }
 "="      { printf("%s \t ASGN\n", yytext); }
 "false"  { printf("%s \t FALSE\n", yytext); }
+"/*"     { printf("%s", yytext); BEGIN C_COMMENT; }
+"//"     { printf("%s", yytext); BEGIN CPP_COMMENT; }
 
 {id}	      { printf("%s \t ID\n", yytext); }
 {i_const}     { printf("%s \t I_CONST\n", yytext); }
 {f_const}     { printf("%s \t F_CONST\n", yytext); }
 {quota}       { printf("%s \t QUOTA\n", yytext); BEGIN STR; }
 {space}       {;}
-{cpp_comment} { printf("%s \t C++ Comment\n", yytext); }
 <STR>{id}     { printf("%s \t STR_CONST\n", yytext); }
 <STR>{quota}  { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
+<C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext); BEGIN 0; }
+<CPP_COMMENT>{newline}    { printf("\t C++ Comment %s", yytext); BEGIN 0; }
 \n			  {;}
 
 %%
