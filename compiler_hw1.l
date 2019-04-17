@@ -33,6 +33,7 @@ newline [\n]
 dot [.]
 quota ["]
 slash [/]
+bslash [\\]
 star [*]
 any_char_but_newline .
 eol $
@@ -42,7 +43,8 @@ id {letter}+({letter}|{digit})*
 
 i_const {digit}+
 f_const {digit}+{dot}{digit}+
-str_const [^"]*
+str_const [^"\\]*
+esc_quota {bslash}{quota}
 
 lcom {slash}{star}
 rcom {star}{slash}
@@ -103,8 +105,9 @@ non_rcom [^{rcom}]
 {space_or_tab}            {;}
 \n                        { ++num_line; }
 
-<STR>{str_const}          { printf("%s \t STR_CONST\n", yytext); }
-<STR>{quota}              { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
+<STR>{str_const}          { printf("%s", yytext); }
+<STR>{esc_quota}          { printf("%s", yytext); }
+<STR>{quota}              { printf(" \t STR_CONST\n%s \t QUOTA\n", yytext); BEGIN 0; }
 <C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext); ++num_comment_line; BEGIN 0; }
 <C_COMMENT>\n             { printf("\n"); ++num_comment_line; ++num_line; }
 <CPP_COMMENT>{newline}    { printf(" \t C++ Comment%s", yytext); ++num_comment_line; ++num_line; BEGIN 0; }
