@@ -17,8 +17,8 @@
     #define T_QUOTA 311
     #define T_STR_CONST 312
 
-	int num_line = 0;
-	int num_comment_line = 0;
+    int num_line = 0;
+    int num_comment_line = 0;
 %}
 
 
@@ -28,31 +28,34 @@
 letter [a-zA-Z]
 digit [0-9]
 all_char [\40-\176]
-dot [\.]
-eol [$]
-space [ ]
+space_or_tab [ \t]+
+newline [\n]
+dot [.]
 quota ["]
 slash [/]
-newline [\n]
-any_char_but_newline .
-
 star [*]
-lcom {slash}{star}
-rcom {star}{slash}
-non_rcom [^{rcom}]
+any_char_but_newline .
+eol $
 
 
 id {letter}+({letter}|{digit})*
-number {digit}+
 
 i_const {digit}+
 f_const {digit}+{dot}{digit}+
 str_const [^"]*
 
+lcom {slash}{star}
+rcom {star}{slash}
+non_rcom [^{rcom}]
+
 
 /* Rules section */
 %x STR C_COMMENT CPP_COMMENT
 %%
+
+"/*"     { printf("%s", yytext); BEGIN C_COMMENT; }
+"//"     { printf("%s", yytext); BEGIN CPP_COMMENT; }
+{quota}  { printf("%s \t QUOTA\n", yytext); BEGIN STR; }
 
 "+"      { printf("%s \t ADD\n", yytext); }
 "-"      { printf("%s \t SUB\n", yytext); }
@@ -64,8 +67,6 @@ str_const [^"]*
 "="      { printf("%s \t ASGN\n", yytext); }
 "true"   { printf("%s \t TRUE\n", yytext); }
 "false"  { printf("%s \t FALSE\n", yytext); }
-"/*"     { printf("%s", yytext); BEGIN C_COMMENT; }
-"//"     { printf("%s", yytext); BEGIN CPP_COMMENT; }
 "*"      { printf("%s \t MUL\n", yytext); }
 "/"      { printf("%s \t DIV\n", yytext); }
 "%"      { printf("%s \t MOD\n", yytext); }
@@ -96,12 +97,11 @@ str_const [^"]*
 "while"  { printf("%s \t WHILE\n", yytext); }
 "return" { printf("%s \t RET\n", yytext); }
 
-{id}          { printf("%s \t ID\n", yytext); }
-{i_const}     { printf("%s \t I_CONST\n", yytext); }
-{f_const}     { printf("%s \t F_CONST\n", yytext); }
-{quota}       { printf("%s \t QUOTA\n", yytext); BEGIN STR; }
-{space}       {;}
-\n            { ++num_line; }
+{id}                      { printf("%s \t ID\n", yytext); }
+{i_const}                 { printf("%s \t I_CONST\n", yytext); }
+{f_const}                 { printf("%s \t F_CONST\n", yytext); }
+{space_or_tab}            {;}
+\n                        { ++num_line; }
 
 <STR>{str_const}          { printf("%s \t STR_CONST\n", yytext); }
 <STR>{quota}              { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
