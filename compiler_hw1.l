@@ -3,20 +3,6 @@
     #include <stdio.h>
     #include <stdlib.h>
 
-    #define T_ID    300 
-    #define T_INT   301
-    #define T_SEMICOLON 302
-    #define T_ASGN 303
-    #define T_I_CONST 304
-    
-    #define T_FLOAT 306
-    #define T_F_CONST 307
-    #define T_BOOL 308
-    #define T_FALSE 309
-    #define T_STRING 310
-    #define T_QUOTA 311
-    #define T_STR_CONST 312
-
     int num_line = 0;
     int num_comment_line = 0;
 %}
@@ -25,34 +11,33 @@
 
 /* Define regular expression label */
 
-letter [a-zA-Z]
-digit [0-9]
-all_char [\40-\176]
-space_or_tab [ \t]+
-newline [\n]
-dot [.]
-quota ["]
-slash [/]
-bslash [\\]
-star [*]
+letter               [a-zA-Z]
+digit                [0-9]
+all_char             [\40-\176]
+space_or_tab         [ \t]+
+newline              [\n]
+dot                  [.]
+quota                ["]
+slash                [/]
+bslash               [\\]
+star                 [*]
 any_char_but_newline .
-eol $
+eol                  $
 
 
-id {letter}+({letter}|{digit})*
-
-i_const {digit}+
-f_const {digit}+{dot}{digit}+
-str_const [^"\\]*
-esc_quota {bslash}{quota}
-
-lcom {slash}{star}
-rcom {star}{slash}
-non_rcom [^{rcom}]
+id                   {letter}+({letter}|{digit})*
+i_const              {digit}+
+f_const              {digit}+{dot}{digit}+
+str_first            [^"\\]
+str_const            [^"\\]*
+esc_quota            {bslash}{quota}
+lcom                 {slash}{star}
+rcom                 {star}{slash}
+non_rcom             [^{rcom}]
 
 
 /* Rules section */
-%x STR C_COMMENT CPP_COMMENT
+%x STR C_COMMENT CPP_COMMENT STR_PLUS
 %%
 
 "/*"     { printf("%s", yytext); BEGIN C_COMMENT; }
@@ -105,9 +90,12 @@ non_rcom [^{rcom}]
 {space_or_tab}            {;}
 \n                        { ++num_line; }
 
-<STR>{str_const}          { printf("%s", yytext); }
-<STR>{esc_quota}          { printf("%s", yytext); }
-<STR>{quota}              { printf(" \t STR_CONST\n%s \t QUOTA\n", yytext); BEGIN 0; }
+<STR>{str_first}          { printf("%s", yytext); BEGIN STR_PLUS; }
+<STR>{esc_quota}          { printf("%s", yytext); BEGIN STR_PLUS; }
+<STR>{quota}              { printf("%s \t QUOTA\n", yytext); BEGIN 0; }
+<STR_PLUS>{str_const}     { printf("%s", yytext); }
+<STR_PLUS>{esc_quota}     { printf("%s", yytext); }
+<STR_PLUS>{quota}         { printf(" \t STR_CONST\n%s \t QUOTA\n", yytext); BEGIN 0; }
 <C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext); ++num_comment_line; BEGIN 0; }
 <C_COMMENT>\n             { printf("\n"); ++num_comment_line; ++num_line; }
 <CPP_COMMENT>{newline}    { printf(" \t C++ Comment%s", yytext); ++num_comment_line; ++num_line; BEGIN 0; }
