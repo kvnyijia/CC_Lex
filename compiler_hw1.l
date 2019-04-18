@@ -83,6 +83,13 @@ non_rcom             [^{rcom}]
 "for"    { printf("%s \t FOR\n", yytext); }
 "while"  { printf("%s \t WHILE\n", yytext); }
 "return" { printf("%s \t RET\n", yytext); }
+"["      { printf("%s \t LSB\n", yytext); }
+"]"      { printf("%s \t RSB\n", yytext); }
+","      { printf("%s \t COMMA\n", yytext); }
+"void"   { printf("%s \t VOID\n", yytext); }
+"continue" { printf("%s \t CONTINUE\n", yytext); }
+"break"    { printf("%s \t BREAK\n", yytext); }
+
 
 {id}                      { printf("%s \t ID\n", yytext); }
 {i_const}                 { printf("%s \t I_CONST\n", yytext); }
