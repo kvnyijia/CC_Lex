@@ -5,6 +5,7 @@
 
     int num_line = 0;
     int num_comment_line = 0;
+    int flag = 1;
 %}
 
 
@@ -95,7 +96,7 @@ non_rcom             [^{rcom}]
 {i_const}                 { printf("%s \t I_CONST\n", yytext); }
 {f_const}                 { printf("%s \t F_CONST\n", yytext); }
 {space_or_tab}            {;}
-\n                        { ++num_line; }
+\n                        { ++num_line; flag = 1; }
 
 <STR>{str_first}          { printf("%s", yytext); BEGIN STR_PLUS; }
 <STR>{esc_quota}          { printf("%s", yytext); BEGIN STR_PLUS; }
@@ -103,9 +104,25 @@ non_rcom             [^{rcom}]
 <STR_PLUS>{str_const}     { printf("%s", yytext); }
 <STR_PLUS>{esc_quota}     { printf("%s", yytext); }
 <STR_PLUS>{quota}         { printf(" \t STR_CONST\n%s \t QUOTA\n", yytext); BEGIN 0; }
-<C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext); ++num_comment_line; BEGIN 0; }
-<C_COMMENT>\n             { printf("\n"); ++num_comment_line; ++num_line; }
-<CPP_COMMENT>{newline}    { printf(" \t C++ Comment%s", yytext); ++num_comment_line; ++num_line; BEGIN 0; }
+<C_COMMENT>"*/"           { printf("%s \t C Comment\n", yytext);
+                            if (flag) {
+                                ++num_comment_line;
+                                flag = 0;
+                            }
+                            BEGIN 0;
+                          }
+<C_COMMENT>\n             { printf("\n");
+                            ++num_comment_line;
+                            flag = 1;
+                            ++num_line; 
+                          }
+<CPP_COMMENT>{newline}    { printf(" \t C++ Comment%s", yytext); 
+                            if (flag)
+                                ++num_comment_line; 
+                            ++num_line; 
+                            flag = 1;
+                            BEGIN 0; 
+                          }
 
 %%
 
